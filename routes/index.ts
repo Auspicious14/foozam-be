@@ -2,7 +2,6 @@ import express from "express";
 import { identifyDish, getDish, addDish } from "../controllers/index";
 
 const router = express.Router();
-const upload = multer();
 
 router.post("/identify",  identifyDish);
 router.get("/:dish", getDish);
