@@ -3,15 +3,22 @@ import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 export const appRoute = express();
+import { errorHandler } from "./middleware/errorHandler";
+
 
 
 dotenv.config();
-const allowedOrigins = process.env.CLIENT_URL
-  ? process.env.CLIENT_URL.split(",").map((url) => url.trim())
-  : ["http://localhost:3002"];
+const allowedOrigins = [process.env.CLIENT_URL];
+appRoute.use(
+  cors({
+    origin: allowedOrigins,
+    credentials: true,
+  })
+);
 
 console.log("CORS Allowed Origins:", allowedOrigins);
 
+appRoute.use(errorHandler);
 appRoute.use(
   cors({
     origin: (origin, callback) => {

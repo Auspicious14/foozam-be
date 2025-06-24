@@ -23,7 +23,7 @@ export const identifyDish = async (req: Request, res: Response) => {
 
     let bestMatch = null;
     let confidence = 0;
-    let topPredictions = [];
+    let topPredictions: any[] = [];
     if (predictions.length > 0) {
       confidence = predictions[0].probability * 100;
       bestMatch = await Food.findOne({
@@ -77,3 +77,5 @@ export const addDish = async (req: Request, res: Response) => {
     res.status(400).json({ error: "Failed to add dish." });
   }
 };
+
+
