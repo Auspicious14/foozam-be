@@ -52,7 +52,7 @@ export const getDish = async (req: Request, res: Response) => {
   const { dish } = req.params;
   const { city } = req.query;
   try {
-    const food = await Food.findOne({ dish: new RegExp(`^${dish}$`, "i") });
+    const food = await Food.findOne({ dish: new RegExp(`^${dish}$`, "i") }).lean();
     if (!food) return res.status(404).json({ error: "Dish not found." });
 
     let locations = food.locations;
