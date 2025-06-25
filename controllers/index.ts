@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
-import Food from "../models";
+import Food,  { IFood, ILocation } from "../models";
 import * as tf from "@tensorflow/tfjs-node";
 import * as mobilenet from "@tensorflow-models/mobilenet";
+import { mapFiles } from "../middlewares/files";
 
 // Lazy-load MobileNet model for serverless
 let model: mobilenet.MobileNet | null = null;
@@ -14,14 +15,22 @@ async function getModel() {
 
 export const identifyDish = async (req: Request, res: Response) => {
   try {
-    if (!req.file) return res.status(400).json({ error: "No image uploaded." });
-    const imageBuffer = req.file.buffer;
-    const imageTensor = tf.node.decodeImage(imageBuffer) as tf.Tensor3D;
+    const imageData = req.body.files
+    if (!imageData) {
+       res.status(400).json({ error: 'No image provided' });
+    }
+  
+    const files = await mapFiles(imageData)
+    if (!files) res.status(404).json({error: "Error uploading Image to cloudinary"})
+    
+    const file = files[0]
+    
+    const imageTensor = tf.node.decodeImage(file.uri) as tf.Tensor3D;
     const model = await getModel();
     const predictions = await model.classify(imageTensor);
     imageTensor.dispose();
 
-    let bestMatch = null;
+    let bestMatch: IFood | null = null;
     let confidence = 0;
     let topPredictions: any[] = [];
     if (predictions.length > 0) {
@@ -36,13 +45,20 @@ export const identifyDish = async (req: Request, res: Response) => {
     }
 
     if (!bestMatch || confidence < 70) {
-      return res.status(200).json({
+      res.status(200).json({
         message: "Low confidence. Top predictions:",
         predictions: topPredictions,
       });
     }
 
-    res.json(bestMatch);
+     res.status(200).json({
+      dish: bestMatch.dish,
+      recipe: bestMatch.recipe,
+      tags: bestMatch.tags,
+      locations: bestMatch.locations,
+      confidence: Math.round(confidence),
+      topPredictions,
+    });
   } catch (err) {
     res.status(500).json({ error: "Failed to identify dish." });
   }
@@ -53,9 +69,9 @@ export const getDish = async (req: Request, res: Response) => {
   const { city } = req.query;
   try {
     const food = await Food.findOne({ dish: new RegExp(`^${dish}$`, "i") }).lean();
-    if (!food) return res.status(404).json({ error: "Dish not found." });
+    if (!food)  res.status(404).json({ error: "Dish not found." });
 
-    let locations = food.locations;
+    let locations: ILocation[] = food.locations;
     if (city) {
       locations = locations.filter(
         (loc) => loc.city.toLowerCase() === String(city).toLowerCase()
