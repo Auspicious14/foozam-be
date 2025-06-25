@@ -1,36 +1,38 @@
 {
-    "name": "shazam-for-food-backend",
-    "version": "1.0.0",
-    "main": "server.ts",
-    "scripts": {
-        "dev": "ts-node-dev server.ts",
-        "seed": "ts-node utils/seed.ts",
-        "build": "tsc"
-    },
-    "license": "MIT",
-    "description": "A Node.js backend for Shazam for Food, providing APIs for recipe management and user authentication",
-    "author": "Auspicious",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/Auspicious14/foozam-be.git"
-    },
-    "dependencies": {
-        "dotenv": "^16.5.0",
-        "mongoose": "^8.16.0",
-        "express": "^5.1.0",
-        "cloudinary": "^2.6.1",
-         "nodemon": "^3.1.10",
-        "cors": "^2.8.5"
-    },
-    "devDependencies": {
-        "@types/express": "^4.17.21",
-        "@types/node": "^20.11.30",
-        "ts-node": "^10.9.2",
-        "ts-node-dev": "^2.0.0",
-        "typescript": "^5.4.0",
-        "@types/cookie-parser": "^1.4.9",
-        "@types/cors": "^2.8.19",
-        "@types/dotenv": "^6.1.1",
-        "@types/mongoose": "^5.11.96"
-    }
+  "name": "shazam-for-food-backend",
+  "version": "1.0.0",
+  "main": "server.ts",
+  "scripts": {
+    "dev": "ts-node-dev server.ts",
+    "seed": "ts-node utils/seed.ts",
+    "build": "tsc",
+    "start": "node dist/server.js"
+  },
+  "license": "MIT",
+  "description": "A Node.js backend for Shazam for Food, providing APIs for recipe management, dish identification, and user authentication",
+  "author": "Auspicious",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Auspicious14/foozam-be.git"
+  },
+  "dependencies": {
+    "@tensorflow/tfjs-node": "^4.22.0",
+    "cloudinary": "^2.6.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "mongoose": "^8.16.0",
+    "nodemon": "^3.1.10"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.11.30",
+    "@types/cookie-parser": "^1.4.9",
+    "@types/dotenv": "^6.1.1",
+    "@types/mongoose": "^5.11.96",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.4.0"
+  }
 }
