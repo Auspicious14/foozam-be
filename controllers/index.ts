@@ -19,6 +19,8 @@ export const identifyDish = async (req: Request, res: Response) => {
       "base64"
     );
 
+    console.log({imageBuffer})
+
     const files = await mapFiles([file]);
     if (!files)
       res.status(404).json({ error: "Error uploading Image to cloudinary" });
@@ -29,8 +31,9 @@ export const identifyDish = async (req: Request, res: Response) => {
       { headers: { "Content-Type": "application/json" } }
     );
 
+
     const { confidence, predictions: topPredictions } = response?.data
-    
+    console.log({confidence, topPredictions})
     let bestMatch: IFood | null = null;
 
     if (topPredictions.length > 0) {
@@ -40,6 +43,8 @@ export const identifyDish = async (req: Request, res: Response) => {
       });
 
     }
+
+    console.log({bestMatch})
 
     if (!bestMatch || confidence < 70) {
       res.status(200).json({
