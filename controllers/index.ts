@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import Food, { IFood, ILocation } from "../models";
 import { mapFiles } from "../middlewares/file";
 import dotenv from 'dotenv'
+import axios from "axios";
 
 dotenv.config()
 
@@ -32,19 +33,12 @@ export const identifyDish = async (req: Request, res: Response) => {
     
     let bestMatch: IFood | null = null;
 
-    if (predictions.length > 0) {
-      confidence = predictions[0].probability * 100;
+    if (topPredictions.length > 0) {
 
       bestMatch = await Food.findOne({
-        dish: new RegExp(predictions[0].className, "i"),
+        dish: new RegExp(topPredictions[0].className, "i"),
       });
 
-      topPredictions = predictions
-        .slice(0, 3)
-        .map((p: { className: string; probability: number }) => ({
-          dish: p.className,
-          confidence: Math.round(p.probability * 100),
-        }));
     }
 
     if (!bestMatch || confidence < 70) {
