@@ -7,11 +7,19 @@
         "seed": "ts-node utils/seed.ts",
         "build": "tsc"
     },
+    "license": "MIT",
+    "description": "A Node.js backend for Shazam for Food, providing APIs for recipe management and user authentication",
+    "author": "Auspicious",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Auspicious14/foozam.git"
+    },
     "dependencies": {
         "@types/cookie-parser": "^1.4.9",
         "@types/cors": "^2.8.19",
         "@types/dotenv": "^6.1.1",
         "@types/mongoose": "^5.11.96",
+        "dotenv": "^16.5.0",
         "mongoose": "^8.16.0"
     },
     "devDependencies": {
