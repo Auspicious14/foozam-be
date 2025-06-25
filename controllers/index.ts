@@ -20,12 +20,17 @@ export const identifyDish = async (req: Request, res: Response) => {
        res.status(400).json({ error: 'No image provided' });
     }
   
+    const imageBuffer = Buffer.isBuffer(imageData)
+      ? imageData
+      : Buffer.from(
+          imageData.replace(/^data:image\/\w+;base64,/, ""),
+          "base64"
+        );
     const files = await mapFiles(imageData)
     if (!files) res.status(404).json({error: "Error uploading Image to cloudinary"})
+
     
-    const file = files[0]
-    
-    const imageTensor = tf.node.decodeImage(file) as tf.Tensor3D;
+    const imageTensor = tf.node.decodeImage(imageBuffer) as tf.Tensor3D;
     const model = await getModel();
     const predictions = await model.classify(imageTensor);
     imageTensor.dispose();
