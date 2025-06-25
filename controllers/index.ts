@@ -25,7 +25,7 @@ export const identifyDish = async (req: Request, res: Response) => {
 
     const response = await axios.post(
       `${process.env.BACKEND_URL}/api/foods/classify`,
-      { image: imageData },
+      { image: imageBuffer },
       { headers: { "Content-Type": "application/json" } }
     );
 
