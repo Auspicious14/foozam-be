@@ -9,6 +9,7 @@ dotenv.config()
 export const identifyDish = async (req: Request, res: Response) => {
   try {
     const file = req.body.file;
+    console.log({file}, req.body)
     if (!file || !file.uri) {
       res.status(400).json({ error: "No image provided" });
     }
@@ -23,7 +24,7 @@ export const identifyDish = async (req: Request, res: Response) => {
       res.status(404).json({ error: "Error uploading Image to cloudinary" });
 
     const response = await axios.post(
-      `${process.env.BACKEND_URL}/api/foods/classify`,
+      `${process.env.CLASSIFY_SERVICE_URL}/api/foods/classify`,
       { image: imageBuffer },
       { headers: { "Content-Type": "application/json" } }
     );
