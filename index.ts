@@ -48,4 +48,4 @@ appRoute.get("/", (req, res) => {
 // Health check
 appRoute.get("/api/health", (_, res) => res.json({ status: "ok" }));
 
-appRoute.use('/api/food', foodRoutes)
+appRoute.use('/api/foods', foodRoutes)
