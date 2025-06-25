@@ -8,18 +8,17 @@ dotenv.config()
 
 export const identifyDish = async (req: Request, res: Response) => {
   try {
-    const imageData = req.body.files;
-    if (!imageData) {
+    const file = req.body.file;
+    if (!file || !file.uri) {
       res.status(400).json({ error: "No image provided" });
     }
 
-    const imageBuffer = Buffer.isBuffer(imageData)
-      ? imageData
-      : Buffer.from(
-          imageData.replace(/^data:image\/\w+;base64,/, ""),
-          "base64"
-        );
-    const files = await mapFiles(imageData);
+    const imageBuffer = Buffer.from(
+      file.uri.replace(/^data:image\/\w+;base64,/, ""),
+      "base64"
+    );
+
+    const files = await mapFiles([file]);
     if (!files)
       res.status(404).json({ error: "Error uploading Image to cloudinary" });
 
