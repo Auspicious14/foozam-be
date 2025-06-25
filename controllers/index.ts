@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import Food,  { IFood, ILocation } from "../models";
 import * as tf from "@tensorflow/tfjs-node";
 import * as mobilenet from "@tensorflow-models/mobilenet";
-import { mapFiles } from "../middlewares/files";
+import { mapFiles } from "../middlewares/file";
 
 // Lazy-load MobileNet model for serverless
 let model: mobilenet.MobileNet | null = null;
@@ -25,7 +25,7 @@ export const identifyDish = async (req: Request, res: Response) => {
     
     const file = files[0]
     
-    const imageTensor = tf.node.decodeImage(file.uri) as tf.Tensor3D;
+    const imageTensor = tf.node.decodeImage(file) as tf.Tensor3D;
     const model = await getModel();
     const predictions = await model.classify(imageTensor);
     imageTensor.dispose();
@@ -38,10 +38,12 @@ export const identifyDish = async (req: Request, res: Response) => {
       bestMatch = await Food.findOne({
         dish: new RegExp(predictions[0].className, "i"),
       });
-      topPredictions = predictions.slice(0, 3).map((p) => ({
-        dish: p.className,
-        confidence: Math.round(p.probability * 100),
-      }));
+      topPredictions = predictions
+        .slice(0, 3)
+        .map((p: { className: string; probability: number }) => ({
+          dish: p.className,
+          confidence: Math.round(p.probability * 100),
+        }));
     }
 
     if (!bestMatch || confidence < 70) {
@@ -49,6 +51,7 @@ export const identifyDish = async (req: Request, res: Response) => {
         message: "Low confidence. Top predictions:",
         predictions: topPredictions,
       });
+      return;
     }
 
      res.status(200).json({
@@ -69,15 +72,21 @@ export const getDish = async (req: Request, res: Response) => {
   const { city } = req.query;
   try {
     const food = await Food.findOne({ dish: new RegExp(`^${dish}$`, "i") }).lean();
+
     if (!food)  res.status(404).json({ error: "Dish not found." });
 
-    let locations: ILocation[] = food.locations;
-    if (city) {
-      locations = locations.filter(
-        (loc) => loc.city.toLowerCase() === String(city).toLowerCase()
-      );
+    let locations: ILocation[] = [];
+    if (food && !Array.isArray(food)) {
+      locations = food.locations as ILocation[];
+      if (city) {
+        locations = locations?.filter(
+          (loc) => loc.city.toLowerCase() === String(city).toLowerCase()
+        );
+      }
+      res.json({ ...food.toObject(), locations });
+    } else {
+      res.status(404).json({ error: "Dish not found." });
     }
-    res.json({ ...food.toObject(), locations });
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch dish." });
   }
