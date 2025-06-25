@@ -4,24 +4,12 @@
     {
       "src": "server.ts",
       "use": "@vercel/node"
-    },
-    {
-      "src": "classify/index.ts",
-      "use":"@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/.*",
       "dest": "server.ts"
-    },
-    {
-      "src": "/api/foods/classify",
-      "dest": "classify/index.ts"
-    },
-    {
-      "src":"classify/index.ts",
-      "dest":"classify/index.ts"
     }
   ]
 }
