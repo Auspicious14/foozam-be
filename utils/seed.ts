@@ -1338,7 +1338,7 @@ const seedData = [
 
 async function seedDatabase() {
   try {
-    await mongoose.connect(process.env.MONGODB_URL);
+    await mongoose.connect(process.env.MONGODB_URL as string);
     await Food.deleteMany({});
     await Food.insertMany(seedData);
     console.log('Seeded 20 dishes successfully');
