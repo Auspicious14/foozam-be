@@ -1,7 +1,5 @@
 import express from "express";
 import mongoose from "mongoose";
-import cors from "cors";
-import { json } from "body-parser";
 import dotenv from "dotenv";
 import {appRoute} from "./index"
 
