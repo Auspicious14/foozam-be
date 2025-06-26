@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.post("/identify",  identifyDish);
 router.get("/:dish", getDish);
-router.post("/", addDish);
+router.post("/add-dish", addDish);
 // router.post('/classify', classifyDish)
 
 export default router;
