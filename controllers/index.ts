@@ -55,7 +55,7 @@ export const identifyDish = async (req: Request, res: Response) => {
       return;
     }
 
-    if (bestMatch && bestMatch.imageUrl) {
+    if (bestMatch && !bestMatch.imageUrl) {
       bestMatch.imageUrl = files[0].uri
       await bestMatch.save()
     }
@@ -64,7 +64,7 @@ export const identifyDish = async (req: Request, res: Response) => {
       dish: bestMatch.dish,
       recipe: bestMatch.recipe,
       tags: bestMatch.tags,
-      imageUrl: bestMatch.imageUrl,
+      imageUrl: bestMatch.imageUrl || files[0]?.uri,
       locations: bestMatch.locations,
       confidence: Math.round(confidence),
       topPredictions,
