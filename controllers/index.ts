@@ -12,6 +12,7 @@ export const identifyDish = async (req: Request, res: Response) => {
     
     if (!file || !file.uri) {
       res.status(400).json({ error: "No image provided" });
+      return
     }
 
     const imageBuffer = Buffer.from(
@@ -20,9 +21,11 @@ export const identifyDish = async (req: Request, res: Response) => {
     );
 
     const files = await mapFiles([file]);
-    if (!files)ll
-    0
-      res.status(404).json({ error: "Error uploading Image to cloudinary" });
+    if (!files) {
+       res.status(404).json({ error: "Error uploading Image to cloudinary" });
+       return
+    }
+
 
     const response = await axios.post(
       `${process.env.CLASSIFY_SERVICE_URL}/api/foods/classify`,
@@ -36,18 +39,8 @@ export const identifyDish = async (req: Request, res: Response) => {
     const topConfidence = topPredictions[0]?.confidence || 0;
     
     let bestMatch: IFood | null = null;
-let highestConfidence = 0;
-   /* if (topPredictions.length > 0) {
-
-      bestMatch = await Food.findOne({
-        dish: new RegExp(topPredictions[0].className, "i"),
-      });
-
-    } */
-
-    
-
-    // Fuzzy match top 5 predictions against dish names
+    let highestConfidence = 0;
+   
     for (const pred of topPredictions) {
       const match = await Food.findOne({
         dish: { $regex: pred.dish.replace(/[^a-zA-Z0-9]/g, ''), $options: 'i' },
