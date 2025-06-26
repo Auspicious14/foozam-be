@@ -9,7 +9,7 @@ dotenv.config()
 export const identifyDish = async (req: Request, res: Response) => {
   try {
     const file = req.body.file;
-    console.log({file}, req.body)
+    
     if (!file || !file.uri) {
       res.status(400).json({ error: "No image provided" });
     }
@@ -19,10 +19,9 @@ export const identifyDish = async (req: Request, res: Response) => {
       "base64"
     );
 
-    console.log({imageBuffer})
-
     const files = await mapFiles([file]);
-    if (!files)
+    if (!files)ll
+    0
       res.status(404).json({ error: "Error uploading Image to cloudinary" });
 
     const response = await axios.post(
@@ -34,6 +33,7 @@ export const identifyDish = async (req: Request, res: Response) => {
 
     const { confidence, predictions: topPredictions } = response?.data
     console.log({confidence, topPredictions})
+    const topConfidence = topPredictions[0]?.confidence || 0;
     
     let bestMatch: IFood | null = null;
 let highestConfidence = 0;
@@ -52,22 +52,41 @@ let highestConfidence = 0;
       const match = await Food.findOne({
         dish: { $regex: pred.dish.replace(/[^a-zA-Z0-9]/g, ''), $options: 'i' },
       });
-      if (match && pred.confidence > highestConfidence) {
+      /* if (match && pred.confidence > highestConfidence) {
         bestMatch = match;
         highestConfidence = pred.confidence;
+      } */
+
+      if (match) {
+        bestMatch = match
+        break;
       }
     }
 
     console.log({bestMatch})
 
-    if (!bestMatch || highestConfidence < 70) {
+    if (!bestMatch) {
+      if (topConfidence > 70) {
+        res.status(200).json({
+          message: 'Strong prediction not in dataset. Suggest adding:',
+          predictedDish: topPredictions[0].dish,
+          confidence: topConfidence,
+          predictions: topPredictions,
+          imageUrl: files[0]?.uri,
+        });
+        return
+      } 
+
+    
       res.status(200).json({
         message: "Low confidence. Top predictions:",
         predictions: topPredictions,
         imageUrl: files[0].uri
       });
       return;
+  
     }
+    
 
     if (bestMatch && !bestMatch.imageUrl) {
       bestMatch.imageUrl = files[0].uri
@@ -80,7 +99,7 @@ let highestConfidence = 0;
       tags: bestMatch.tags,
       imageUrl: bestMatch.imageUrl || files[0]?.uri,
       locations: bestMatch.locations,
-      confidence: Math.round(highestConfidence),
+      confidence: Math.round(topConfidence),
       topPredictions,
     });
   } catch (err) {
