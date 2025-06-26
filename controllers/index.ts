@@ -34,19 +34,33 @@ export const identifyDish = async (req: Request, res: Response) => {
 
     const { confidence, predictions: topPredictions } = response?.data
     console.log({confidence, topPredictions})
+    
     let bestMatch: IFood | null = null;
-
-    if (topPredictions.length > 0) {
+let highestConfidence = 0;
+   /* if (topPredictions.length > 0) {
 
       bestMatch = await Food.findOne({
         dish: new RegExp(topPredictions[0].className, "i"),
       });
 
+    } */
+
+    
+
+    // Fuzzy match top 5 predictions against dish names
+    for (const pred of topPredictions) {
+      const match = await Food.findOne({
+        dish: { $regex: pred.dish.replace(/[^a-zA-Z0-9]/g, ''), $options: 'i' },
+      });
+      if (match && pred.confidence > highestConfidence) {
+        bestMatch = match;
+        highestConfidence = pred.confidence;
+      }
     }
 
     console.log({bestMatch})
 
-    if (!bestMatch || confidence < 70) {
+    if (!bestMatch || highestConfidence < 70) {
       res.status(200).json({
         message: "Low confidence. Top predictions:",
         predictions: topPredictions,
@@ -66,7 +80,7 @@ export const identifyDish = async (req: Request, res: Response) => {
       tags: bestMatch.tags,
       imageUrl: bestMatch.imageUrl || files[0]?.uri,
       locations: bestMatch.locations,
-      confidence: Math.round(confidence),
+      confidence: Math.round(highestConfidence),
       topPredictions,
     });
   } catch (err) {
