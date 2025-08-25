@@ -1,12 +1,12 @@
 import express from "express";
-import { identifyDish, getDish, addDish } from "../controllers/index";
-// import { classifyDish } from "../classify";
+import { identifyDish, getDish, addDish, getDishLocations } from "../controllers/index";
+import { protect } from "../middlewares/auth";
 
 const router = express.Router();
 
-router.post("/identify",  identifyDish);
-router.get("/:dish", getDish);
-router.post("/add-dish", addDish);
-// router.post('/classify', classifyDish)
+router.post("/dishes/identify", identifyDish);
+router.get("/dishes/:dish", getDish);
+router.post("/dishes", protect, addDish);
+router.get("/dishes/:dish/locations", getDishLocations);
 
 export default router;
