@@ -1,14 +1,16 @@
 import { Request, Response } from "express";
-import Food, { IFood, ILocation } from "../models";
+import Food, { IFood } from "../models";
 import { mapFiles } from "../middlewares/file";
 import dotenv from 'dotenv'
 import axios from "axios";
+import { getNearbyRestaurants, ILocation } from "../utils/google-places";
 
 dotenv.config()
 
 export const identifyDish = async (req: Request, res: Response) => {
   try {
-    const file = req.body.file;
+    const { file } = req.body;
+    const { lat, lon } = req.query;
     
     if (!file || !file.uri) {
       res.status(400).json({ error: "No image provided" });
@@ -39,16 +41,11 @@ export const identifyDish = async (req: Request, res: Response) => {
     const topConfidence = topPredictions[0]?.confidence || 0;
     
     let bestMatch: IFood | null = null;
-    let highestConfidence = 0;
    
     for (const pred of topPredictions) {
       const match = await Food.findOne({
         dish: { $regex: pred.dish.replace(/[^a-zA-Z0-9]/g, ''), $options: 'i' },
       });
-      /* if (match && pred.confidence > highestConfidence) {
-        bestMatch = match;
-        highestConfidence = pred.confidence;
-      } */
 
       if (match) {
         bestMatch = match
@@ -86,12 +83,17 @@ export const identifyDish = async (req: Request, res: Response) => {
       await bestMatch.save()
     }
 
+    let locations: ILocation[] = [];
+    if (lat && lon) {
+      locations = await getNearbyRestaurants(bestMatch.dish, Number(lat), Number(lon));
+    }
+
     res.status(200).json({
       dish: bestMatch.dish,
       recipe: bestMatch.recipe,
       tags: bestMatch.tags,
       imageUrl: bestMatch.imageUrl || files[0]?.uri,
-      locations: bestMatch.locations,
+      locations,
       confidence: Math.round(topConfidence),
       topPredictions,
     });
@@ -102,26 +104,24 @@ export const identifyDish = async (req: Request, res: Response) => {
 
 export const getDish = async (req: Request, res: Response) => {
   const { dish } = req.params;
-  const { city } = req.query;
+  const { lat, lon } = req.query;
   try {
     const food = await Food.findOne({
       dish: new RegExp(`^${dish}$`, "i"),
-    }).lean();
+    }).lean() as unknown as IFood;
 
-    if (!food) res.status(404).json({ error: "Dish not found." });
+    if (!food) {
+      res.status(404).json({ error: "Dish not found." });
+      return;
+    }
 
     let locations: ILocation[] = [];
-    if (food && !Array.isArray(food)) {
-      locations = food.locations as ILocation[];
-      if (city) {
-        locations = locations?.filter(
-          (loc) => loc.city.toLowerCase() === String(city).toLowerCase()
-        );
-      }
-      res.json({ ...food.toObject(), locations });
-    } else {
-      res.status(404).json({ error: "Dish not found." });
+    if (lat && lon) {
+      locations = await getNearbyRestaurants(food.dish, Number(lat), Number(lon));
     }
+
+    res.json({ ...food, locations });
+
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch dish." });
   }
@@ -129,8 +129,8 @@ export const getDish = async (req: Request, res: Response) => {
 
 export const addDish = async (req: Request, res: Response) => {
   try {
-    const { dish, recipe, tags, locations } = req.body;
-    const newFood = new Food({ dish, recipe, tags, locations });
+    const { dish, recipe, tags, imageUrl } = req.body;
+    const newFood = new Food({ dish, recipe, tags, imageUrl });
     await newFood.save();
     res.status(201).json(newFood);
   } catch (err) {
