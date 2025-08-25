@@ -1,12 +1,10 @@
 import express from "express";
 import { identifyDish, getDish, addDish } from "../controllers/index";
-// import { classifyDish } from "../classify";
 
 const router = express.Router();
 
-router.post("/identify",  identifyDish);
-router.get("/:dish", getDish);
-router.post("/add-dish", addDish);
-// router.post('/classify', classifyDish)
+router.post("/dishes/identify", identifyDish);
+router.get("/dishes/:dish", getDish);
+router.post("/dishes", addDish);
 
 export default router;

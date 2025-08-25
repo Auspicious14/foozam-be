@@ -129,7 +129,28 @@ export const getDish = async (req: Request, res: Response) => {
 
 export const addDish = async (req: Request, res: Response) => {
   try {
-    const { dish, recipe, tags, imageUrl } = req.body;
+    const { dish, recipe, tags, file } = req.body;
+
+    if (!dish || !recipe) {
+      return res.status(400).json({ error: 'Dish and recipe are required.' });
+    }
+
+    if (tags && !Array.isArray(tags)) {
+        return res.status(400).json({ error: 'Tags must be an array of strings.' });
+    }
+
+    if (!file || !file.uri) {
+      res.status(400).json({ error: "No image provided" });
+      return
+    }
+
+    const files = await mapFiles([file]);
+    if (!files) {
+       res.status(404).json({ error: "Error uploading Image to cloudinary" });
+       return
+    }
+    const imageUrl = files[0].uri;
+
     const newFood = new Food({ dish, recipe, tags, imageUrl });
     await newFood.save();
     res.status(201).json(newFood);
