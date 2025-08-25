@@ -4,6 +4,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import { errorHandler } from "./middlewares/error";
 import foodRoutes from "./routes"
+import authRoutes from "./routes/auth";
 
 dotenv.config();
 
@@ -48,4 +49,5 @@ appRoute.get("/", (req, res) => {
 // Health check
 appRoute.get("/api/health", (_, res) => res.json({ status: "ok" }));
 
+appRoute.use('/api/auth', authRoutes);
 appRoute.use('/api/foods', foodRoutes)
