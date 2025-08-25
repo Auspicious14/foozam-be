@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
-import Food, { IFood } from "../models";
+import Food from "../models";
+import { IFood } from "../models/types";
 import { mapFiles } from "../middlewares/file";
 import dotenv from 'dotenv'
 import axios from "axios";

@@ -1,11 +1,5 @@
-import mongoose, { Schema, Document } from 'mongoose';
-
-export interface IFood extends Document {
-  dish: string;
-  recipe: string;
-  tags: string[];
-  imageUrl: string;
-}
+import mongoose, { Schema } from 'mongoose';
+import { IFood } from './types';
 
 const FoodSchema = new Schema<IFood>({
   dish: { type: String, required: true, unique: true },
