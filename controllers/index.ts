@@ -158,3 +158,19 @@ export const addDish = async (req: Request, res: Response) => {
     res.status(400).json({ error: "Failed to add dish." });
   }
 };
+
+export const getDishLocations = async (req: Request, res: Response) => {
+  const { dish } = req.params;
+  const { lat, lon } = req.query;
+
+  if (!lat || !lon) {
+    return res.status(400).json({ error: 'Latitude and longitude are required.' });
+  }
+
+  try {
+    const locations = await getNearbyRestaurants(dish, Number(lat), Number(lon));
+    res.json(locations);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch dish locations.' });
+  }
+};
