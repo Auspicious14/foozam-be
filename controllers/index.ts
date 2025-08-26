@@ -4,7 +4,7 @@ import { IFood } from "../models/types";
 import { mapFiles } from "../middlewares/file";
 import dotenv from 'dotenv'
 import axios from "axios";
-import { getNearbyRestaurants, ILocation } from "../utils/google-places";
+import { getNearbyRestaurants, ILocation } from "../utils/location";
 
 dotenv.config()
 
